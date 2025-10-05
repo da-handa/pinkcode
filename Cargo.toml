@@ -1,0 +1,19 @@
+[package]
+name = "pink-code-server" # 원하는 프로젝트 이름으로 변경 가능
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# 비동기 처리를 위한 핵심 런타임
+tokio = { version = "1", features = ["full"] }
+# Axum 웹 프레임워크
+axum = "0.7"
+# JSON 데이터 처리를 위한 직렬화/역직렬화
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 환경 변수 관리를 위한 dotenv
+dotenvy = "0.15"
+# 외부 API (Gemini) 호출을 위한 비동기 HTTP 클라이언트
+reqwest = { version = "0.11", features = ["json"] }
+# axum 0.7.x 버전과 더 잘 호환되는 tower-http 버전을 사용합니다.
+tower-http = { version = "0.5.0", features = ["cors"] }
