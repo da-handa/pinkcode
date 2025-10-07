@@ -9,6 +9,4 @@ echo "Sourcing environment and building project..."
 . $HOME/.cargo/env
 # cargo 명령어로 릴리스 빌드를 수행합니다.
 cargo build --release
-git add vercel-build.sh
-git commit -m "Add vercel build script for stable Rust deployment"
-git push origin master
+
