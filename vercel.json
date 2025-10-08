@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "pinkcodeserver/target/release/pinkcodeserver", // 수정된 폴더명 적용
+      "src": "pinkcodeserver/target/release/pinkcodeserver",
       "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/pinkcodeserver/target/release/pinkcodeserver" // 수정된 폴더명 적용
+      "destination": "/pinkcodeserver/target/release/pinkcodeserver"
     }
   ]
 }
