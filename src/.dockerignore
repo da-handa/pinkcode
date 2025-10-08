@@ -1,0 +1,7 @@
+# Docker 빌드에 불필요한 Rust 결과물과 로컬 파일을 제외
+target/
+.git
+.gitignore
+.cargo
+.vscode
+Cargo.lock # Fly.io가 자체적으로 생성합니다.
