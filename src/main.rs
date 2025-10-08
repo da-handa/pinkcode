@@ -5,7 +5,7 @@ use axum::{
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use std::{net::SocketAddr, time::Duration}; // Duration 추가
+use std::{net::SocketAddr, time::Duration}; 
 use dotenvy::dotenv;
 use tower_http::cors::{CorsLayer, Any}; 
 
@@ -51,7 +51,7 @@ async fn main() {
     // 2. 웹사이트와 통신할 수 있도록 보안 허가증 설정
     let cors = CorsLayer::new()
         .allow_origin(Any) // 모든 웹사이트 접근 허용 (개발용)
-        .allow_methods([Method::GET, Method::POST]) // axum::http::Method 사용
+        .allow_methods([Method::GET, Method::POST]) 
         .allow_headers(Any);
     
     // 3. 서버 통신 경로(라우트) 설정
@@ -59,16 +59,26 @@ async fn main() {
         .route("/", get(hello_world)) 
         .route("/chat", post(handle_chat)); 
         
-    // CORS 레이어를 명확하게 적용 (타입 에러 해결)
     let app = app.layer(cors); 
 
-    // 4. 서버 실행 주소 설정 (포트 3000번)
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    // ------------------------------------------------------------------
+    // 🛠️ Fly.io 최종 수정: 0.0.0.0 주소와 환경 변수 PORT (8080) 사용
+    // ------------------------------------------------------------------
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
+        .unwrap_or(8080); // 환경 변수 파싱 실패 시 기본 8080 사용
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    
     println!("Pink Code Rust Server listening on {}", addr);
 
-    // 5. 서버 시작! (axum::Server::bind 대신 axum::serve 사용)
-    // NOTE: 휴대폰 접속을 위해 0.0.0.0으로 바인딩합니다.
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    // 4. 서버 시작!
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap_or_else(|e| {
+        eprintln!("Failed to bind to {}: {}", addr, e);
+        std::process::exit(1);
+    });
+    
     axum::serve(listener, app)
         .await
         .unwrap();
@@ -79,7 +89,7 @@ async fn hello_world() -> &'static str {
     "Pink Code Rust Server is running and ready for chat!"
 }
 
-// 4. 메시지 처리 및 AI 응답 요청 함수
+// 4. 메시지 처리 및 AI 응답 요청 함수 (기능 로직은 그대로 유지)
 async fn handle_chat(Json(payload): Json<MessageRequest>) -> impl IntoResponse {
     // 1. 비밀번호(.env) 가져오기
     let api_key = match std::env::var("GEMINI_API_KEY") {
