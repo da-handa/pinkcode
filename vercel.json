@@ -2,7 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "pinkcodeserver/target/release/pinkcodeserver",
+      "src": "vercel-build.sh", // 빌드 소스 파일을 스크립트 파일로 지정
+      "use": "@vercel/static-build", // 정적 빌더를 사용하여 스크립트를 실행
+      "config": {
+        "outputDirectory": "pinkcodeserver/target/release" // 결과물 경로 지정 (띄어쓰기 제거된 폴더명 사용)
+      }
+    },
+    {
+      "src": "pinkcodeserver/target/release/pinkcodeserver", // 최종 실행 파일 경로 (라우팅용)
       "use": "@vercel/node"
     }
   ],
