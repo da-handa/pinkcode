@@ -1,35 +1,37 @@
-# --- 1단계: 빌드 환경 (Builder) ---
-FROM rust:latest AS builder
+# 1단계: 정적 빌드 환경 (MUSL)
+# Alpine 리눅스를 기반으로 하며, 정적 빌드에 최적화된 이미지를 사용합니다.
+FROM ekidd/rust-musl-builder:latest AS builder
 
 # 작업 디렉토리 설정
-WORKDIR /app
+WORKDIR /home/rust/src
 
-# 의존성 미리 캐시 및 빌드
+# Cargo.toml 및 Cargo.lock 복사
 COPY Cargo.toml Cargo.lock ./
+
+# 의존성만 미리 빌드하여 캐시합니다.
 # 임시 main.rs 파일로 의존성만 빌드하여 캐시합니다.
 RUN mkdir src/ && echo "fn main() {}" > src/main.rs && cargo build --release
-RUN rm -rf target/release/deps/pinkcodeserver target/release/pinkcodeserver
+RUN rm -rf target/x86_64-unknown-linux-musl/release/deps/pinkcodeserver target/x86_64-unknown-linux-musl/release/pinkcodeserver
 
 # 전체 소스 코드 복사 및 최종 빌드
 COPY . .
-# 실행 파일 이름이 'pinkcodeserver'이라고 가정합니다.
+
+# 정적 바이너리 빌드 (MUSL)
+# ⚠️ 실행 파일 이름은 Cargo.toml에 정의된 "pinkcodeserver"를 따라야 합니다.
 RUN cargo build --release
 
 # --- 2단계: 실행 환경 (Runner) ---
-FROM debian:stable-slim
+# 라이브러리 의존성이 적은 가벼운 Alpine 리눅스를 사용합니다.
+FROM alpine:latest
 
-# 🛠️ 수정: libssl3 설치 및 APT 캐시 제거 (중요!)
-RUN apt-get update && apt-get install -y \
-    libssl3 \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-    
-# ... (나머지 코드 유지) ...
+# 런타임에 필요한 CA 인증서만 설치합니다. (OpenSSL은 정적 빌드에 포함됨)
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 # Builder 단계에서 빌드된 실행 파일만 복사합니다.
-COPY --from=builder /app/target/release/pinkcodeserver /usr/local/bin/
+# 실행 파일 경로는 musl 빌드 환경에 맞게 변경되었습니다.
+COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/pinkcodeserver /usr/local/bin/
 
-# 환경 변수 설정 (Fly.io에서 기본적으로 8080 포트를 사용하도록 설정했는지 확인)
+# 환경 변수 설정
 ENV PORT=8080
 
 # 서버 실행 명령어
