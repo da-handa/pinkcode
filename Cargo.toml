@@ -1,5 +1,5 @@
 [package]
-name = "pink-code-server" # 원하는 프로젝트 이름으로 변경 가능
+name = "pinkcodeserver" # 원하는 프로젝트 이름으로 변경 가능
 version = "0.1.0"
 edition = "2021"
 

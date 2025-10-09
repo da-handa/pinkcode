@@ -27,10 +27,10 @@ RUN apt-get update && apt-get install -y \
 # ... (나머지 코드 유지) ...
 
 # Builder 단계에서 빌드된 실행 파일만 복사합니다.
-COPY --from=builder /app/target/release/pink-code-server /usr/local/bin/
+COPY --from=builder /app/target/release/pinkcodeserver /usr/local/bin/
 
 # 환경 변수 설정 (Fly.io에서 기본적으로 8080 포트를 사용하도록 설정했는지 확인)
 ENV PORT=8080
 
 # 서버 실행 명령어
-CMD ["/usr/local/bin/pink-code-server"]
+CMD ["/usr/local/bin/pinkcodeserver"]
