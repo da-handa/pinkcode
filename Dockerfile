@@ -3,7 +3,7 @@
 FROM rust:latest AS host_builder
 
 WORKDIR /app
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 # Cargo.lock이 없으면 이 단계에서 생성됩니다.
 
 # 2단계: 최종 정적 바이너리 빌드 환경 (Target Environment)
