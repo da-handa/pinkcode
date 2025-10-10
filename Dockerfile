@@ -10,8 +10,8 @@ RUN mkdir src/ && echo "fn main() {}" > src/main.rs && cargo check
 # 2단계: 최종 정적 바이너리 빌드 환경 (Target Environment)
 FROM rust:alpine AS builder
 
-# 1단계에서 빌드된 매크로 환경에서 Cargo 캐시를 가져옵니다.
-COPY --from=host_builder /usr/local/cargo /usr/local/cargo
+# ✅ 수정: Cargo 바이너리 복사 라인을 제거하고, target 캐시만 복사합니다.
+# COPY --from=host_builder /usr/local/cargo /usr/local/cargo <--- 이 줄을 제거하세요!
 COPY --from=host_builder /app/target /app/target
 
 # MUSL 도구 및 환경 설정
@@ -24,17 +24,15 @@ WORKDIR /app
 # Cargo.toml 복사
 COPY Cargo.toml ./
 
-# ✅ 수정 1: Cargo를 절대 경로로 실행합니다.
-# 의존성만 미리 빌드하여 캐시
-RUN mkdir src/ && echo "fn main() {}" > src/main.rs && /usr/local/cargo/bin/cargo build --release
+# 의존성만 미리 빌드하여 캐시 (Cargo 명령어는 이제 정상 작동합니다)
+RUN mkdir src/ && echo "fn main() {}" > src/main.rs && cargo build --release
 RUN rm -rf target/release/deps/pinkcodeserver target/release/pinkcodeserver
 
 # 전체 소스 코드 복사 및 최종 빌드
 COPY . .
 
-# ✅ 수정 2: Cargo를 절대 경로로 실행합니다.
 # 정적 바이너리 빌드 (최종 실행 파일 생성)
-RUN /usr/local/cargo/bin/cargo build --release
+RUN cargo build --release
 
 # --- 3단계: 실행 환경 (Runner) ---
 FROM alpine:latest
