@@ -6,7 +6,7 @@ FROM ekidd/rust-musl-builder:latest AS builder
 WORKDIR /home/rust/src
 
 # Cargo.toml 및 Cargo.lock 복사
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 
 # 의존성만 미리 빌드하여 캐시합니다.
 # 임시 main.rs 파일로 의존성만 빌드하여 캐시합니다.
