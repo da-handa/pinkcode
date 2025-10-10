@@ -1,13 +1,13 @@
 # 1단계: Proc-Macro 컴파일 환경 (Host Environment)
-# 일반 Debian 기반 Rust 이미지를 사용하여 매크로 의존성을 처리합니다.
 FROM rust:latest AS host_builder
 
 WORKDIR /app
 COPY Cargo.toml ./
-# Cargo.lock이 없으면 이 단계에서 생성됩니다.
-RUN cargo check
+
+# ✅ 수정: src/main.rs 더미 파일을 생성하고 의존성 캐시를 생성합니다.
+RUN mkdir src/ && echo "fn main() {}" > src/main.rs && cargo check
+
 # 2단계: 최종 정적 바이너리 빌드 환경 (Target Environment)
-# Alpine 기반 Rust 이미지를 사용하여 MUSL 정적 빌드를 수행합니다.
 FROM rust:alpine AS builder
 
 # 1단계에서 빌드된 매크로 환경에서 Cargo 캐시를 가져옵니다.
