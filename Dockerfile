@@ -17,7 +17,7 @@ COPY --from=host_builder /app/target /app/target
 # MUSL 도구 및 환경 설정
 RUN apk add --no-cache musl-dev
 ENV RUSTFLAGS="-C target-feature=+crt-static"
-
+ENV PATH="/usr/local/cargo/bin:$PATH"
 # 작업 디렉토리 설정
 WORKDIR /app
 
