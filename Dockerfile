@@ -1,35 +1,36 @@
-# 1단계: 정적 빌드 환경 (MUSL)
-# Alpine 리눅스를 기반으로 하며, 정적 빌드에 최적화된 이미지를 사용합니다.
-FROM ekidd/rust-musl-builder:latest AS builder
+# 1단계: 정적 빌드 환경 (Rust Alpine 사용)
+FROM rust:latest-alpine AS builder
+
+# MUSL 도구 설치 및 빌드 환경 설정
+RUN apk add --no-cache musl-dev
+ENV RUSTFLAGS="-C target-feature=+crt-static"
 
 # 작업 디렉토리 설정
-WORKDIR /home/rust/src
+WORKDIR /app
 
-# Cargo.toml 및 Cargo.lock 복사
+# Cargo.toml만 복사 (Cargo.lock은 로컬에서 삭제했으므로)
 COPY Cargo.toml ./
 
-# 의존성만 미리 빌드하여 캐시합니다.
-# 임시 main.rs 파일로 의존성만 빌드하여 캐시합니다.
+# 의존성만 미리 빌드하여 캐시 (빌드가 느린 musl 환경에선 필수)
 RUN mkdir src/ && echo "fn main() {}" > src/main.rs && cargo build --release
-RUN rm -rf target/x86_64-unknown-linux-musl/release/deps/pinkcodeserver target/x86_64-unknown-linux-musl/release/pinkcodeserver
+RUN rm -rf target/release/deps/pinkcodeserver target/release/pinkcodeserver
 
 # 전체 소스 코드 복사 및 최종 빌드
 COPY . .
 
-# 정적 바이너리 빌드 (MUSL)
-# ⚠️ 실행 파일 이름은 Cargo.toml에 정의된 "pinkcodeserver"를 따라야 합니다.
+# 정적 바이너리 빌드 (최종 실행 파일 생성)
 RUN cargo build --release
 
 # --- 2단계: 실행 환경 (Runner) ---
-# 라이브러리 의존성이 적은 가벼운 Alpine 리눅스를 사용합니다.
+# 라이브러리 의존성이 없는 가벼운 Alpine 리눅스만 사용
 FROM alpine:latest
 
-# 런타임에 필요한 CA 인증서만 설치합니다. (OpenSSL은 정적 빌드에 포함됨)
+# 런타임에 필요한 CA 인증서만 설치합니다.
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
-# Builder 단계에서 빌드된 실행 파일만 복사합니다.
-# 실행 파일 경로는 musl 빌드 환경에 맞게 변경되었습니다.
-COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/pinkcodeserver /usr/local/bin/
+# Builder 단계에서 빌드된 실행 파일 복사
+# target/release 경로는 rust:latest-alpine 환경의 기본 경로입니다.
+COPY --from=builder /app/target/release/pinkcodeserver /usr/local/bin/
 
 # 환경 변수 설정
 ENV PORT=8080
