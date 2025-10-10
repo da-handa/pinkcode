@@ -1,5 +1,5 @@
 # 1단계: 정적 빌드 환경 (Rust Alpine 사용)
-FROM rust:latest-alpine AS builder
+FROM rust:alpine AS builder
 
 # MUSL 도구 설치 및 빌드 환경 설정
 RUN apk add --no-cache musl-dev
